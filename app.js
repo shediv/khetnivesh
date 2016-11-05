@@ -7,14 +7,21 @@ var mongoose = require('mongoose');
 var cors = require('express-cors');
 var multer = require('multer');
 var jwt = require('jsonwebtoken');
+// [SH] Require Passport
+var passport = require('passport');
+var constants = require('./app/libraries/constants.js');
+
+
 
 var config = require('./app/config/config.js');
 var envConfig = require('./app/config/config.env.js');
+// [SH] Bring in the Passport config after model is defined
+require('./app/config/passport.js');
 
 var routes = require('./app/routes/index');
 var user = require('./app/routes/user');
 
-
+//It instantiates Express and assigns our app variable to it
 var app = express();
 
 // view engine setup
@@ -23,19 +30,14 @@ app.set('view engine', 'jade');
 
 app.use(cors({
     allowedOrigins: [
-        'http://tma.dev',
-        'http://themediaant.com',
-        'http://www.themediaant.com',
-        'http://testing.themediaant.com',
-        'http://www.m20.in',
-        'http://m20.in',
-        'http://tma.dev:3000',
-        'http://www.tma.dev:3000',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000'
+        'http://54.186.117.252:3000',
+        'http://54.186.117.252',
+        'http://localhost:7000',
+        'http://fiddle.jshell.net',
     ],
 	headers: [
-		'x-access-token', 'Content-Type'
+		'x-access-token', 'Content-Type',
+    'Authorization',  'Bearer'
 	]
 }));
 
@@ -68,8 +70,8 @@ app.use(function(req, res, next){
 
 //app.use(logger('dev'));
 
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(bodyParser.json({limit: envConfig.dataLimit}));
+app.use(bodyParser.urlencoded({limit: envConfig.dataLimit, extended: true}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -96,6 +98,19 @@ app.use(multer({dest: './public/temp/'}).single('file'));
 //   );
 // });
 
+
+// [SH] Catch unauthorised errors
+app.use(function (err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401);
+    res.json({"message" : err.name + ": " + err.message});
+  }
+});
+
+// [SH] Initialise Passport before using the route middleware
+app.use(passport.initialize());
+
+
  
 app.use('/user', user);
 app.use('/', routes);
@@ -103,7 +118,7 @@ app.use('/', routes);
 // error handlers
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (app.get('env') ===  envConfig.envDevelopment) {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
