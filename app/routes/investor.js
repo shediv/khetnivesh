@@ -13,12 +13,11 @@ var auth = jwt({
   userProperty: 'payload'
 });
 
-//router.get('/', auth, InvestorCtrl.getList); //.. Get profile data API
-router.get('/', auth, InvestorCtrl.mainPage); //.. Get profile data API
 
-// router.post("/", UserCtrl.loginUser); //... Login API
-// router.post('/register', UserCtrl.register); //.. Reg API
-// router.get('/current', auth, UserCtrl.current); //.. Verify user Account
-// router.get('/profile', auth, UserCtrl.profile); //.. Get profile data API
+router.post("/", auth, InvestorCtrl.investOnFarmer); //... Login API
+router.get('/', auth, InvestorCtrl.mainPage); //.. Get profile data API
+router.get('/search', auth, InvestorCtrl.getAllFarmers); //.. Get profile data API
+router.get('/profile', auth, InvestorCtrl.profile); //.. Get profile data API
+router.get('/farmer/:id', auth, InvestorCtrl.getfarmerDetails); //.. Get profile data API
 
 module.exports = router;

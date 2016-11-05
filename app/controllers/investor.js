@@ -111,51 +111,31 @@ var Investor = function()
 	// 	})  
 	// };
 
-	// this.current = function(req, res){
-	// 	if (!req.payload._id) {
-	//     	res.status(401).json({message : constants.constUnAuthorizedAccess});
-	//   	} else {
-	// 	    User.findById(req.payload._id).exec(function(err, user) {
-	// 			return res.status(200).json({msg: "User has sucessfully Logged in"});		       	
-	// 	    });
-	//   	}
-	// }
+	this.current = function(req, res){
+		if (!req.payload._id) {
+	    	res.status(401).json({message : constants.constUnAuthorizedAccess});
+	  	} else {
+		    User.findById(req.payload._id).exec(function(err, user) {
+				return res.status(200).json({msg: "User has sucessfully Logged in"});		       	
+		    });
+	  	}
+	}
 
-	// this.profile = function(req, res) {	
+	this.profile = function(req, res) {	
 
-	//  if (!req.payload._id) {
-	//     res.status(401).json({
-	//       message : constants.constUnAuthorizedAccess
-	//     });
-	//   } else {
-	//   	var notificationPrefrenceArray = [];
-	//     User.findOne({ _id : req.payload._id }).lean().exec(function(err, user) {
-	//     	delete user.hash;delete user.salt;delete user.loginType;delete user.passwordLastUpdatedAt;
-	//     	//user.nicknames = CommonLib.getUsersNicknames(user._id);
-	//     	CommonLib.getUserNotificationPreference(user.notificationPrefrence, function(err, notifications){
- //              if(notifications) for(i in user.notificationPrefrence) { user.notificationPrefrence[i] = notifications[user.notificationPrefrence[i]];}
- //              CommonLib.getUserEmailPreference(user.emailPrefrence, function(err, emailTypes){
- //              	if(emailTypes) for(i in user.emailPrefrence) { user.emailPrefrence[i] = emailTypes[user.emailPrefrence[i]];}
- //              	CommonLib.getUserPromotionalEmailPreference(user.emailPromotional, function(err, promoEmailTypes){
- //              		user.emailPromotional = promoEmailTypes;
- //              		//return res.status(200).json({ user: user });
-
- //              		CommonLib.getUsersNicknames(user._id, function(err, nicknames){	
- //              			user.nicknames = nicknames;
- //              			return res.status(200).json({ user: user });
- //              		})
-
-
-
- //              	})	
- //            })
-
-
-
- //            })	
-	//     });
-	//   } 
-	// };
+	 if (!req.payload._id) {
+	    res.status(401).json({
+	      message : constants.constUnAuthorizedAccess
+	    });
+	  } else {
+	  	var notificationPrefrenceArray = [];
+	    User.findOne({ _id : req.payload._id }).lean().exec(function(err, user) {
+			FarmersModel.find({ "investors.userId" : user._id.toString() }, { "name" : 1, "crop" : 1, "profitShareRate": 1, "investors.$.userId" : 1 }).exec(function(err, farmers) {
+				return res.status(200).json({farmers: farmers});
+			})	
+	    });
+	  } 
+	};
 
 	this.getList = function(req, res){
 	    FarmersModel.find({}).exec(function(err, farmers) {
@@ -179,6 +159,46 @@ var Investor = function()
         function(err, results) {
             return res.status(200).json({ topFarmers: results.topFarmers, topInvestors: results.topInvestors });
         });
+	}
+
+	this.getfarmerDetails = function(req, res){
+	    FarmersModel.findOne({ _id : req.params.id}).exec(function(err, farmers) {
+			return res.status(200).json({farmers: farmers});		       	
+	    });
+	}
+
+	this.investOnFarmer = function(req, res){
+	    if (!req.payload._id) {
+	    	res.status(401).json({message : constants.constUnAuthorizedAccess});
+	  	} else {
+		    User.findById(req.payload._id).exec(function(err, user) {
+				FarmersModel.findOne({ _id : req.body.farmerId }).lean().exec(function(err, farmer) {
+               		
+               		var newInvestmentLeft = farmer.investmentLeft - req.body.investedAmount;
+               		var data = {
+                           			userId : user._id.toString(),
+                           			firstName : user.firstName, 
+						            lastName : user.lastName, 
+						            profileImage : "req.body.profileImage", 
+						            amountInvested : req.body.investedAmount
+                           		};
+               		FarmersModel.update({ _id : req.body.farmerId}, { $set: { investmentLeft : newInvestmentLeft }, $push: { investors: data } }).exec();
+                	return res.status(200).json({ farmer: farmer });
+				})		       	
+		    });
+	  	}
+	}
+
+	this.getAllFarmers = function(req, res){
+	    if (!req.payload._id) {
+	    	res.status(401).json({message : constants.constUnAuthorizedAccess});
+	  	} else {
+		    User.findById(req.payload._id).exec(function(err, user) {
+				FarmersModel.find({}).lean().exec(function(err, farmers) {
+                	return res.status(200).json({ farmers: farmers });
+				})		       	
+		    });
+	  	}
 	}
 
 }
