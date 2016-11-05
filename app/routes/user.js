@@ -13,6 +13,7 @@ var auth = jwt({
   userProperty: 'payload'
 });
 
+router.get('/', UserCtrl.getUsers); //.. Get profile data API
 router.post("/", UserCtrl.loginUser); //... Login API
 router.post('/register', UserCtrl.register); //.. Reg API
 router.get('/current', auth, UserCtrl.current); //.. Verify user Account

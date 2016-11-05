@@ -156,6 +156,12 @@ var User = function()
 	  } 
 	};
 
+	this.getUsers = function(req, res){
+	    User.find({}).exec(function(err, users) {
+			return res.status(200).json({users: users});		       	
+	    });
+	}
+
 }
 
 module.exports.User = User;
