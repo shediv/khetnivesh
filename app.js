@@ -20,6 +20,7 @@ require('./app/config/passport.js');
 
 var routes = require('./app/routes/index');
 var user = require('./app/routes/user');
+var investor = require('./app/routes/investor');
 
 //It instantiates Express and assigns our app variable to it
 var app = express();
@@ -113,6 +114,7 @@ app.use(passport.initialize());
 
  
 app.use('/user', user);
+app.use('/investor', investor); 
 app.use('/', routes);
 
 // error handlers
