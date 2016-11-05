@@ -131,7 +131,8 @@ var Investor = function()
 	  	var notificationPrefrenceArray = [];
 	    User.findOne({ _id : req.payload._id }).lean().exec(function(err, user) {
 			FarmersModel.find({ "investors.userId" : user._id.toString() }, { "name" : 1, "crop" : 1, "profitShareRate": 1, "investors.$.userId" : 1 }).exec(function(err, farmers) {
-				return res.status(200).json({farmers: farmers});
+				user.farmers = farmers;
+				return res.status(200).json({user: user});
 			})	
 	    });
 	  } 
